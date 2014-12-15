@@ -141,17 +141,15 @@ object State {
     }
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
-    def handleInput(input: Input): State[Machine, (Int, Int)] = State(
-      m => m match {
-        case Machine(locked, candies, coins) =>
-          val (locked1, candies1, coins1) = input match {
-            case Coin if locked && candies > 0 => (false, candies, coins + 1)
-            case Turn if !locked => (true, candies - 1, coins)
-            case _ => (locked, candies, coins)
-          }
-          ((coins1, candies1), Machine(locked1, candies1, coins1))
-      }
-    )
+    def handleInput(input: Input): State[Machine, (Int, Int)] = State({
+      case Machine(locked, candies, coins) =>
+        val (locked1, candies1, coins1) = input match {
+          case Coin if locked && candies > 0 => (false, candies, coins + 1)
+          case Turn if !locked => (true, candies - 1, coins)
+          case _ => (locked, candies, coins)
+        }
+        ((coins1, candies1), Machine(locked1, candies1, coins1))
+    })
     sequence(inputs.map(handleInput)).map(_.last)
   }
 }
